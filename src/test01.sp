@@ -1,0 +1,5 @@
+**< MOSを2つ使ったバイアス段 >***
+
+*M01 INB INB 111 111 CMOSP l=3.0E-6 w=wid2211
+M02 INB INB 999 999 CMOSN l=3.0E-6 w=wid2212
+R01 111 999 10k
