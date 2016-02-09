@@ -5,13 +5,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 public class TestDiagramNo1{
 	static String spfile_name_ = "/Network/Servers/minerva.ktlab.el.gunma-u.ac.jp/Volumes/UsersN01/kazuto.okouchi/"
-			+ "Desktop/Common-Differential-amplifer49s4-db.sp";
+			+ "Desktop/ネットリスト/Common-Differential-amplifer49s4-db.sp";
 //		メイン
 		public static void main(String[] args) throws InterruptedException, IOException{
 			System.out.println("Program Start");
@@ -55,36 +56,55 @@ public class TestDiagramNo1{
 					}
 				}
 			}
-			
 			System.out.println("抽出に成功しました");
-//			`vdd個数のカウント
+
+//			vdd個数のカウント
 			int vdd_num = 0;
 			for (int i = 0; i < element_card_.size(); i++) {
 				if (element_card_.get(i).equals("vdd")) {
 					vdd_num++;
 				}
-				System.out.println(element_card_.get(i));
-				if
 			}
+			
 //			二次元配列
+//			列はとりあえずvddの8倍
+			vdd_num = vdd_num * 8;
+			ArrayList[] line = new ArrayList[(vdd_num)];
 			
-			ArrayList[] line = new ArrayList[(vdd_num*8)];
-			
-			for (int j = 0; j < (vdd_num*8); j++) {
+			for (int j = 0; j < (vdd_num); j++) {
 				line[j] = new ArrayList();
 			}
-			System.out.println((vdd_num*8));
-			for (int i = 0; i < (vdd_num*8); i++) {
-				line[i].add("ffffff");
-			}
-			
 			
 			ArrayList<ArrayList<String>> column = new ArrayList<ArrayList<String>>();
-			for (int j = 0; j < vdd_num; j++) {
+			for (int j = 0; j < vdd_num/2; j++) {
 				column.add(line[j]);
 			}
-			System.out.println(column.get(0).get(0));
-//			System.out.println(column.get(0).get(0));
+			
+//			line[56].add("test");
+//			column.add(1, line[56]);
+//			column.get(1).add("test2");
+//			System.out.println(column.get(1));
+			
+			
+			
+			
+			
+//			
+			String above_node = "vdd";
+			int line_num = 1;
+			for (int i = 0; i < element_card_.size(); i++) {
+				if (element_card_.get(i).equals(above_node)) {
+					element_card_.remove(i);
+					line[line_num].add(element_card_.remove(i));
+					line[line_num].add(element_card_.remove(i));
+					line_num++;
+					i--;
+				}
+			}
+			for (int i = 0; i < 10; i++) {
+				System.out.println(column.get(i));
+			}
+			
 //			List<ArrayList>[] column = new List[vdd_num*8];
 //			hairetuso-toyou
 //			ArrayList<String> tmpArrayList = new ArrayList<String>();
