@@ -67,15 +67,19 @@ public class TestDiagram {
 			if (spfile_element_Matcher.find()) {
 				if (n_type.equals(spfile_element_Matcher.group(6))) {
 					element_diagram[j][above_node] = spfile_element_Matcher.group(2);
-					element_diagram[j][element_num] = spfile_element_Matcher.group(1)+
-							                          "-" +spfile_element_Matcher.group(3);
+					element_diagram[j][element_num] = spfile_element_Matcher.group(1)
+													+"    "
+//							                          +"-" +spfile_element_Matcher.group(3)
+							;
 					element_diagram[j][bottom_node] = spfile_element_Matcher.group(4);
 					j++;
 				}
 				else if ("cmosp".equals(spfile_element_Matcher.group(6))) {
 					element_diagram[j][above_node] = spfile_element_Matcher.group(4);
-					element_diagram[j][element_num] = spfile_element_Matcher.group(1)+
-							                          "-" +spfile_element_Matcher.group(3);
+					element_diagram[j][element_num] = spfile_element_Matcher.group(1)
+							+"    "
+//							+"-" +spfile_element_Matcher.group(3)
+							;
 					element_diagram[j][bottom_node] = spfile_element_Matcher.group(2);
 					j++;
 				}
@@ -132,6 +136,8 @@ public class TestDiagram {
 		for (int i = 0 ; i <20; i++) {
 
 			if (element_diagram[i][above_node].equals(node_001)){
+//				element_diagram_full[j][diagram_line] = "vdd     ";
+//				diagram_line++;
 				element_diagram_full[j][diagram_line] = " |      ";
 				diagram_line++;
 				element_diagram_full[j][diagram_line] = element_diagram[i][element_num]+" ";
@@ -152,7 +158,7 @@ public class TestDiagram {
 						element_diagram_full[j][diagram_line] = element_diagram[k][bottom_node]+"     ";
 						diagram_line++;
 					
-						if (element_diagram[k][bottom_node].equals("gnd")){
+						if (element_diagram[k][bottom_node].equals("vss")){
 						j++;
 						diagram_line = 0;
 						break;
@@ -166,7 +172,7 @@ public class TestDiagram {
 				break;
 			}
 		}
-		System.out.println("Vdd___________________________________________________________");
+//		System.out.println("Vdd_______________________________________________________");
 		for (int i = 0; i < 12; i++) {
 			for (int l = 0; l < 8; l++) {
 				System.out.print(element_diagram_full[l][i]);

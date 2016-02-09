@@ -1,3 +1,4 @@
+import java.awt.List;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -11,7 +12,7 @@ import java.util.regex.Pattern;
 public class TestDiagramNo1{
 	static String spfile_name_ = "/Network/Servers/minerva.ktlab.el.gunma-u.ac.jp/Volumes/UsersN01/kazuto.okouchi/"
 			+ "Desktop/Common-Differential-amplifer49s4-db.sp";
-//		ƒƒCƒ“
+//		ãƒ¡ã‚¤ãƒ³
 		public static void main(String[] args) throws InterruptedException, IOException{
 			System.out.println("Program Start");
 			Pattern SPFILE_ELEMENT_PATTERN = Pattern.compile("(?:(^M\\w+) (\\w+) (\\w+) "
@@ -19,10 +20,12 @@ public class TestDiagramNo1{
 			
 			HashMap<String, String> np_channel = new HashMap<String, String>();
 			
-			//		4n=ã’[q@1+4n=‘fq@2+4n=‰º’[q@3+4n=ƒQ[ƒg n=0~
+			//		4n=ä¸Šç«¯å­ã€€1+4n=ç´ å­ã€€2+4n=ä¸‹ç«¯å­ã€€3+4n=ã‚²ãƒ¼ãƒˆ n=0~
 			ArrayList<String> element_card_ = new ArrayList<String>();
 
-			//		spƒtƒ@ƒCƒ‹‚©‚ç’Šo
+			HashMap<String, String> gate_node = new HashMap<String, String>();
+			HashMap<String, String> bulk_node = new HashMap<String, String>();
+			//		spãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰æŠ½å‡º
 			BufferedReader br = new BufferedReader(new FileReader(spfile_name_));
 			String tmp_read;
 			while((tmp_read = br.readLine())!=null){
@@ -32,13 +35,15 @@ public class TestDiagramNo1{
 						element_card_.add(spfile_element_Matcher.group(2));
 						element_card_.add(spfile_element_Matcher.group(1));
 						element_card_.add(spfile_element_Matcher.group(4));
-						element_card_.add(spfile_element_Matcher.group(3));
+						gate_node.put(spfile_element_Matcher.group(1),spfile_element_Matcher.group(3));
+						bulk_node.put(spfile_element_Matcher.group(1),spfile_element_Matcher.group(5));
 						np_channel.put(spfile_element_Matcher.group(1), "n");
 					}else if ("cmosp".equals(spfile_element_Matcher.group(6))) {
 						element_card_.add(spfile_element_Matcher.group(4));
 						element_card_.add(spfile_element_Matcher.group(1));
 						element_card_.add(spfile_element_Matcher.group(2));
-						element_card_.add(spfile_element_Matcher.group(3));
+						gate_node.put(spfile_element_Matcher.group(1),spfile_element_Matcher.group(3));
+						bulk_node.put(spfile_element_Matcher.group(1),spfile_element_Matcher.group(5));
 						np_channel.put(spfile_element_Matcher.group(1), "p");
 					}else if ("R".equals(spfile_element_Matcher.group(8))||
 							  "r".equals(spfile_element_Matcher.group(8))||
@@ -47,122 +52,154 @@ public class TestDiagramNo1{
 						element_card_.add(spfile_element_Matcher.group(9));
 						element_card_.add(spfile_element_Matcher.group(7));
 						element_card_.add(spfile_element_Matcher.group(10));
-						element_card_.add("    ");
 					}
 				}
 			}
 			
-			System.out.println("’Šo‚É¬Œ÷‚µ‚Ü‚µ‚½");
-			
-			
-			
-//			‰ñ˜H}ì¬
-			String[][] diagram = new String[200][200];
-			for (int i=0; i < 10; i++) {
-				for (int j = 0; j <40; j++) {
-					diagram[i][j] = "   ";
+			System.out.println("æŠ½å‡ºã«æˆåŠŸã—ã¾ã—ãŸ");
+//			`vddå€‹æ•°ã®ã‚«ã‚¦ãƒ³ãƒˆ
+			int vdd_num = 0;
+			for (int i = 0; i < element_card_.size(); i++) {
+				if (element_card_.get(i).equals("vdd")) {
+					vdd_num++;
 				}
-			}
-			int hight=0;
-			int wide=3;
-			String bottom_node = "vdd";
-//			ƒŠƒXƒg‚©‚O‚©”»’è
-			while (element_card_.size()!=0) {
-//				‰º’[q‚É‡‚¤‘fq‚ğ’Tõi‰Šú‚Ívddj
-				for (int i = 0; i <= element_card_.size(); i=i+4) {
-					if (i==element_card_.size()) {
-						System.out.println("‚±‚êˆÈã‚Ì’Tõ‚Í–³—p");
-						hight=hight-2;
-						bottom_node=diagram[hight][wide-3];
-						System.out.println("’[q‚ğ‚³‚ç‚É‚Ğ‚Æ‚Â–ß‚·"+bottom_node);
-//						if (bottom_node.equals("vdd")) {
-//							w=w+4;
-//							System.out.println("—ñ•ÏX");
-//						}
-						i=i-element_card_.size();
-					}
-					System.out.println("ƒŠƒXƒg‚Ì’†");
-					for (int k = 0; k < element_card_.size(); k=k+4) {
-						System.out.print(element_card_.get(k)+" ");
-						System.out.print(element_card_.get(k+1)+" ");
-						System.out.print(element_card_.get(k+2)+" ");
-						System.out.print(element_card_.get(k+3));
-						System.out.println();
-					}
-//					System.out.println("ŒJ‚è•Ô‚µ•Ï”i="+i);
-					if (element_card_.get(i).equals(bottom_node)) {
-						diagram[hight][wide] = element_card_.remove(i);
-						System.out.println(hight+" "+wide+" "+diagram[hight][wide]);
-						hight++;
-						diagram[hight][wide] = element_card_.remove(i);
-						System.out.println(hight+" "+wide+" "+diagram[hight][wide]);
-						bottom_node   = element_card_.remove(i);
-						System.out.println("‰º"+bottom_node);
-						diagram[hight][wide+1] = element_card_.remove(i);
-						System.out.println(hight+" "+(wide+1)+" "+diagram[hight][wide+1]);
-						hight++;
-						i=i-4;
-						System.out.println();
-					}
-					if (bottom_node.equals("vss")) {
-						System.out.println("vss’[q‚É“’B");
-						hight=hight-2;
-						bottom_node = diagram[hight][wide];
-						wide=wide+3;
-						System.out.println("’[q‚ğ‚Ğ‚Æ‚Â–ß‚·"+bottom_node);
-					}
-				}
-			}
-			
-			String node_001 = "001";
-			String node_tmp;
-			int diagram_line = 0;
-			int j = 0;
-//			001‚Ì’Tõ
-//			001‚ª‚ ‚Á‚½‚ç‘fq‚ğo—ÍiŒã‚ÍVdd’[q‚É•ÏXj
-			while (element_card_.size()!=0) {int i=1
-
-				if (element_card_.get(index).equals(node_001)){
-					element_diagram_full[j][diagram_line] = " |      ";
-					diagram_line++;
-					element_diagram_full[j][diagram_line] = element_diagram[i][element_num]+" ";
-					diagram_line++;
-					element_diagram_full[j][diagram_line] = " |      ";
-					diagram_line++;
-					element_diagram_full[j][diagram_line] = element_diagram[i][bottom_node]+"     ";
-					diagram_line++;
-				    node_tmp = element_diagram[i][bottom_node];
-				    for (int k = 0; k < 20; k++) {
-						if (element_diagram[k][above_node].equals(node_tmp)) {
-							element_diagram_full[j][diagram_line] = " |      ";
-							diagram_line++;
-							element_diagram_full[j][diagram_line] = element_diagram[k][element_num]+" ";
-							diagram_line++;
-							element_diagram_full[j][diagram_line] = " |      ";
-							diagram_line++;
-							element_diagram_full[j][diagram_line] = element_diagram[k][bottom_node]+"     ";
-							diagram_line++;
-						
-							if (element_diagram[k][bottom_node].equals("gnd")){
-							j++;
-							diagram_line = 0;
-							break;
-							}else {
-								node_tmp = element_diagram[k][bottom_node];
-//							‰º’[q‚ªgnd‚¶‚á‚È‚©‚Á‚½‚Ì‚Å’TõÄŠJ
-							}
-						}
-				    }
-				}else if (element_diagram[i][above_node].equals(null)) {
-					break;
-				}
-			}
-			
-			
-//			ƒŠƒXƒg‚Ìc‚è‚ğo—Í
-			for (int i = 0; i < element_card_.size(); i=i+4) {
 				System.out.println(element_card_.get(i));
+				if
 			}
+//			äºŒæ¬¡å…ƒé…åˆ—
+			
+			ArrayList[] line = new ArrayList[(vdd_num*8)];
+			
+			for (int j = 0; j < (vdd_num*8); j++) {
+				line[j] = new ArrayList();
+			}
+			System.out.println((vdd_num*8));
+			for (int i = 0; i < (vdd_num*8); i++) {
+				line[i].add("ffffff");
+			}
+			
+			
+			ArrayList<ArrayList<String>> column = new ArrayList<ArrayList<String>>();
+			for (int j = 0; j < vdd_num; j++) {
+				column.add(line[j]);
+			}
+			System.out.println(column.get(0).get(0));
+//			System.out.println(column.get(0).get(0));
+//			List<ArrayList>[] column = new List[vdd_num*8];
+//			hairetuso-toyou
+//			ArrayList<String> tmpArrayList = new ArrayList<String>();
+			
+			
+//			å›è·¯å›³ä½œæˆ
+//			for (int i=0; i < vdd_num; i++) {
+//				for (int j = 0; j <element_card_.size; j++) {
+//					if (element_card_.get(j).equals("vdd")) {
+//						element_card_.remove(j);
+//						
+//					}
+//				}
+//				}
+//			}
+//			int co=0;
+//			int wide=;
+//			String bottom_node = "vdd";
+////			ãƒªã‚¹ãƒˆã‹ï¼ã‹åˆ¤å®š
+//			while (element_card_.size()!=0) {
+////				ä¸‹ç«¯å­ã«åˆã†ç´ å­ã‚’æ¢ç´¢ï¼ˆåˆæœŸã¯vddï¼‰
+//				for (int i = 0; i <= element_card_.size(); i=i+4) {
+//					if (i==element_card_.size()) {
+//						System.out.println("ã“ã‚Œä»¥ä¸Šã®æ¢ç´¢ã¯ç„¡ç”¨");
+//						hight=hight-2;
+//						bottom_node=diagram[hight][wide-3];
+//						System.out.println("ç«¯å­ã‚’ã•ã‚‰ã«ã²ã¨ã¤æˆ»ã™"+bottom_node);
+////						if (bottom_node.equals("vdd")) {
+////							w=w+4;
+////							System.out.println("åˆ—å¤‰æ›´");
+////						}
+//						i=i-element_card_.size();
+//					}
+//					System.out.println("ãƒªã‚¹ãƒˆã®ä¸­");
+//					for (int k = 0; k < element_card_.size(); k=k+4) {
+//						System.out.print(element_card_.get(k)+" ");
+//						System.out.print(element_card_.get(k+1)+" ");
+//						System.out.print(element_card_.get(k+2)+" ");
+//						System.out.print(element_card_.get(k+3));
+//						System.out.println();
+//					}
+////					System.out.println("ç¹°ã‚Šè¿”ã—å¤‰æ•°i="+i);
+//					if (element_card_.get(i).equals(bottom_node)) {
+//						diagram[hight][wide] = element_card_.remove(i);
+//						System.out.println(hight+" "+wide+" "+diagram[hight][wide]);
+//						hight++;
+//						diagram[hight][wide] = element_card_.remove(i);
+//						System.out.println(hight+" "+wide+" "+diagram[hight][wide]);
+//						bottom_node   = element_card_.remove(i);
+//						System.out.println("ä¸‹"+bottom_node);
+//						diagram[hight][wide+1] = element_card_.remove(i);
+//						System.out.println(hight+" "+(wide+1)+" "+diagram[hight][wide+1]);
+//						hight++;
+//						i=i-4;
+//						System.out.println();
+//					}
+//					if (bottom_node.equals("vss")) {
+//						System.out.println("vssç«¯å­ã«åˆ°é”");
+//						hight=hight-2;
+//						bottom_node = diagram[hight][wide];
+//						wide=wide+3;
+//						System.out.println("ç«¯å­ã‚’ã²ã¨ã¤æˆ»ã™"+bottom_node);
+//					}
+//				}
+//			}
+//			
+//			String node_001 = "001";
+//			String node_tmp;
+//			int diagram_line = 0;
+//			int j = 0;
+////			001ã®æ¢ç´¢
+////			001ãŒã‚ã£ãŸã‚‰ç´ å­ã‚’å‡ºåŠ›ï¼ˆå¾Œã¯Vddç«¯å­ã«å¤‰æ›´ï¼‰
+//			while (element_card_.size()!=0) {int i=1
+//
+//				if (element_card_.get(index).equals(node_001)){
+//					element_diagram_full[j][diagram_line] = " |      ";
+//					diagram_line++;
+//					element_diagram_full[j][diagram_line] = element_diagram[i][element_num]+" ";
+//					diagram_line++;
+//					element_diagram_full[j][diagram_line] = " |      ";
+//					diagram_line++;
+//					element_diagram_full[j][diagram_line] = element_diagram[i][bottom_node]+"     ";
+//					diagram_line++;
+//				    node_tmp = element_diagram[i][bottom_node];
+//				    for (int k = 0; k < 20; k++) {
+//						if (element_diagram[k][above_node].equals(node_tmp)) {
+//							element_diagram_full[j][diagram_line] = " |      ";
+//							diagram_line++;
+//							element_diagram_full[j][diagram_line] = element_diagram[k][element_num]+" ";
+//							diagram_line++;
+//							element_diagram_full[j][diagram_line] = " |      ";
+//							diagram_line++;
+//							element_diagram_full[j][diagram_line] = element_diagram[k][bottom_node]+"     ";
+//							diagram_line++;
+//						
+//							if (element_diagram[k][bottom_node].equals("gnd")){
+//							j++;
+//							diagram_line = 0;
+//							break;
+//							}else {
+//								node_tmp = element_diagram[k][bottom_node];
+////							ä¸‹ç«¯å­ãŒgndã˜ã‚ƒãªã‹ã£ãŸã®ã§æ¢ç´¢å†é–‹
+//							}
+//						}
+//				    }
+//				}else if (element_diagram[i][above_node].equals(null)) {
+//					break;
+//				}
+//			}
+//			
+//			
+////			ãƒªã‚¹ãƒˆã®æ®‹ã‚Šã‚’å‡ºåŠ›
+//			for (int i = 0; i < element_card_.size(); i=i+4) {
+//				System.out.println(element_card_.get(i));
+//			}
 			
 		}
 	}
