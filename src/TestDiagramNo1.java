@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
 
 
 public class TestDiagramNo1{
-	static String spfile_name_ = "/Network/Servers/minerva.ktlab.el.gunma-u.ac.jp/Volumes/UsersN01/kazuto.okouchi/"
-			+ "Desktop/ネットリスト/Common-Differential-amplifer49s4-db.sp";
+	static String spfile_name_ = "/Network/Servers/minerva.ktlab.el.gunma-u.ac.jp/Volumes/UsersN01/kazuto.okouchi/Desktop/ネットリスト/TopologySeed_300_0.sp";
+//	static String spfile_name_ = "/Network/Servers/minerva.ktlab.el.gunma-u.ac.jp/Volumes/UsersN01/kazuto.okouchi/Desktop/ネットリスト/";
 //		メイン
 		public static void main(String[] args) throws InterruptedException, IOException{
 			System.out.println("Program Start");
@@ -21,13 +21,14 @@ public class TestDiagramNo1{
 			
 			HashMap<String, String> np_channel = new HashMap<String, String>();
 			
-			//		4n=上端子　1+4n=素子　2+4n=下端子　3+4n=ゲート n=0~
+//			n=上端子　1+n=素子　2+n=下端子
 			ArrayList<String> element_card_ = new ArrayList<String>();
 
 			HashMap<String, String> gate_node = new HashMap<String, String>();
 			HashMap<String, String> bulk_node = new HashMap<String, String>();
-			//		spファイルから抽出
+//			spファイルから抽出
 			BufferedReader br = new BufferedReader(new FileReader(spfile_name_));
+			
 			String tmp_read;
 			while((tmp_read = br.readLine())!=null){
 				Matcher spfile_element_Matcher = SPFILE_ELEMENT_PATTERN.matcher(tmp_read);
@@ -56,6 +57,7 @@ public class TestDiagramNo1{
 					}
 				}
 			}
+			
 			System.out.println("抽出に成功しました");
 
 //			vdd個数のカウント
@@ -74,22 +76,46 @@ public class TestDiagramNo1{
 			for (int j = 0; j < (vdd_num); j++) {
 				line[j] = new ArrayList();
 			}
-			
+//			行はとりあえず列の半分で作成
 			ArrayList<ArrayList<String>> column = new ArrayList<ArrayList<String>>();
 			for (int j = 0; j < vdd_num/2; j++) {
 				column.add(line[j]);
 			}
-			
-//			line[56].add("test");
-//			column.add(1, line[56]);
-//			column.get(1).add("test2");
-//			System.out.println(column.get(1));
+//			残りlineのカウント変数
+			int count_line_remaining = vdd_num/2+1;
 			
 			
+//----------キャパシターの抽出start
+			Pattern CAPACITOR_PATTERN = Pattern.compile("^C");
+			for (int i = 0; i < element_card_.size(); i++) {
+				
+				Matcher CAPACITOR_MATCHER = CAPACITOR_PATTERN.matcher(element_card_.get(i));
+				if (CAPACITOR_MATCHER.find()) {
+					System.out.println("ok");
+					System.out.println(count_line_remaining);
+					line[count_line_remaining].add(element_card_.remove(i-1));
+					line[count_line_remaining].add(element_card_.remove(i-1));
+					line[count_line_remaining].add(element_card_.remove(i-1));
+					if (line[count_line_remaining].get(2).equals("out")) {
+						System.out.println("キャパシターが出力端子につながってます");
+					}else {
+						System.out.println("キャパシターと抵抗が出力端子につながってます");
+						for (int k = 0; k < element_card_.size(); k++) {
+							if (element_card_.get(k).equals(line[count_line_remaining].get(2))) {
+															   element_card_.remove(k);
+								line[count_line_remaining].add(element_card_.remove(k));
+								line[count_line_remaining].add(element_card_.remove(k));
+							}
+						}
+					}
+				}
+			}
+			count_line_remaining++;
+//---------キャパシターの抽出end			
 			
 			
 			
-//			
+//----------一列目start
 			String above_node = "vdd";
 			int line_num = 1;
 			for (int i = 0; i < element_card_.size(); i++) {
@@ -104,6 +130,97 @@ public class TestDiagramNo1{
 			for (int i = 0; i < 10; i++) {
 				System.out.println(column.get(i));
 			}
+//----------一列目end	
+			
+//----------ノード重複チェックstart
+			int node_check_line = 1;
+			String check1;
+			for (int i = 0; i < vdd_num; i++) {
+				try{
+					check1 = column.get(i).get(node_check_line);
+					for (int j = i; j < vdd_num; j++) {
+						if (check1.equals(column.get(i+j).get(node_check_line))) {
+							column.add(i+1, column.remove(i+j));
+						}
+					}
+				}
+				catch(IndexOutOfBoundsException e){
+					continue;
+				}
+			}
+			System.out.println(element_card_);
+//--------- ノード重複チェックend			
+			
+			System.out.println(column.get(1).size());
+			
+			
+			
+//			二列目
+			int branch_num = 1;
+			for (int i = 1; i < column.size(); i++) {
+				try{
+				above_node = column.get(i).get(node_check_line);
+				for (int k = 0; k < element_card_.size(); k=k+3) {
+					if (element_card_.get(k).equals(above_node)) {
+						switch (branch_num) {
+						case 1:
+							element_card_.remove(k);
+							column.get(i).add(element_card_.remove(k));
+							column.get(i).add(element_card_.remove(k));
+						case 2:
+							i++;
+							column.add(i, line[count_line_remaining]);
+							for (int j = 0; j < node_check_line; j++) {
+								line[count_line_remaining].add("   ");
+							}
+							element_card_.remove(k);
+							column.get(i).add(element_card_.remove(k));
+							column.get(i).add(element_card_.remove(k));
+						}
+						
+					}
+				}
+				}catch(IndexOutOfBoundsException e){
+					continue;
+				}
+			}
+			for (int i = 0; i < 10; i++) {
+				System.out.println(column.get(i));
+			}
+			node_check_line = node_check_line +2;
+			System.out.println(element_card_);
+			
+			
+			
+			
+//			三列目
+			for (int i = 1; i < column.size(); i++) {
+				try{
+				above_node = column.get(i).get(node_check_line);
+				for (int k = 0; k < element_card_.size(); k=k+3) {
+					if (element_card_.get(k).equals(above_node)) {
+						element_card_.remove(k);
+						column.get(i).add(element_card_.remove(k));
+						column.get(i).add(element_card_.remove(k));
+					}
+				}
+				}catch(IndexOutOfBoundsException e){
+					continue;
+				}
+			}
+			for (int i = 0; i < 10; i++) {
+				System.out.println(column.get(i));
+			}
+			System.out.println(element_card_);
+			
+			
+			
+			
+			
+			
+			
+			
+			
 			
 //			List<ArrayList>[] column = new List[vdd_num*8];
 //			hairetuso-toyou
